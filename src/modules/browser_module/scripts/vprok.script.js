@@ -1,14 +1,14 @@
-export class VprokScript {
+export class VprokScript  {
 
     result = []
 
-    constructor( url, region ) {
+    constructor(url, region) {
         this.url = url;
         this.region = region;
-     }
+    }
 
-    getLaunchParams(){
-        return { headless: false }
+    getLaunchParams() {
+        return { headless: true }
     }
 
     getPageOptions() {
@@ -19,8 +19,8 @@ export class VprokScript {
         }
     }
 
-    script() {
-        [
+    getScript() {
+        return [
             {
                 path: "https://www.vprok.ru/",
                 method: "goto",
@@ -30,7 +30,7 @@ export class VprokScript {
 
             },
             {
-                path: "#__next > div.FeatureAppLayoutBase_layout__0HSBo.FeatureAppLayoutBase_withBanner__OeajF.FeatureAppLayoutBase_hideBannerMobile__97CUm.FeatureAppLayoutBase_hideBannerTablet__dCMoJ.FeatureAppLayoutBase_hideBannerDesktop__gPdf1 > div:nth-child(3) > div.UiHeaderHorizontalBase_secondRow__7b4Lk > div > div.UiHeaderHorizontalBase_region__2ODCG",
+                path: "#__next > div.FeatureAppLayoutBase_layout__0HSBo.FeatureAppLayoutBase_hideBannerMobile__97CUm.FeatureAppLayoutBase_hideBannerTablet__dCMoJ.FeatureAppLayoutBase_hideBannerDesktop__gPdf1 > div:nth-child(3) > div.UiHeaderHorizontalBase_secondRow__7b4Lk > div > div.UiHeaderHorizontalBase_region__2ODCG",
                 method: "waitForSelector",
                 description: "Ищем кнопку выбора региона",
                 callback: async (foundedElem) => {
@@ -49,13 +49,16 @@ export class VprokScript {
                 method: "$$",
                 description: "получаю список регионов из отображенного в модальном окне",
                 options: {
-                    region: this.region // 'Владимирская обл.' /* хардкод */
+                    region: 'Владимирская обл.' // this.region // 'Владимирская обл.' /* хардкод */
                 },
-                callback: async (opt) => {
-                    for (let i = 0; i < items.length; i++) {
-                        const item = items[i];
+                callback: async (page, { listElems, options }) => {
+                    console.log(`options`, options)
+                    console.log(`выполняю калбак`)
+                    for (let i = 0; i < listElems.length; i++) {
+                        const item = listElems[i];
                         const text = await page.evaluate(el => el.textContent, item);
-                        if (text.includes(opt.region)) {
+                        if (text.includes(options.region)) {
+                            console.log(`совпадение есть`)
                             await item.click();
                             break;
                         }
@@ -76,27 +79,31 @@ export class VprokScript {
                 description: "Ожидаю отрисовки DOM после перехода",
             },
             {
+                method: "wait",
+                description: "таймаут 5 секунд",
+            },
+            /* иногда скриншот не делается - нужно подождать */
+            {
                 path: "",
                 method: "screenshot",
                 description: "Делаю скриншот полной страницы продукта",
-                options: { path: `./screens/${(new Date).getTime()}.jpg` },
+                options: { path: `./screens/${(new Date).getTime()}.jpg`/* , fullPage: true */ },
                 retry: 0
             },
-            {
-                path: "`#__next > div.FeatureAppLayoutBase_layout__0HSBo.FeatureAppLayoutBase_hideBannerMobile__97CUm.FeatureAppLayoutBase_hideBannerTablet__dCMoJ.FeatureAppLayoutBase_hideBannerDesktop__gPdf1 > main > div:nth-child(3) > div > div.ProductPage_informationBlock__vDYCH > div.ProductPage_desktopBuy__cyRrC > div > div > div`",
-                method: "waitForSelector",
-                description: "Жду элемент артикул ?",
-            },
+            // {
+            //     path: "`#__next > div.FeatureAppLayoutBase_layout__0HSBo.FeatureAppLayoutBase_hideBannerMobile__97CUm.FeatureAppLayoutBase_hideBannerTablet__dCMoJ.FeatureAppLayoutBase_hideBannerDesktop__gPdf1 > main > div:nth-child(3) > div > div.ProductPage_informationBlock__vDYCH > div.ProductPage_desktopBuy__cyRrC > div > div > div`",
+            //     method: "waitForSelector",
+            //     description: "Жду элемент артикул ?",
+            // },
             {
                 path: `#__next > div.FeatureAppLayoutBase_layout__0HSBo.FeatureAppLayoutBase_hideBannerMobile__97CUm.FeatureAppLayoutBase_hideBannerTablet__dCMoJ.FeatureAppLayoutBase_hideBannerDesktop__gPdf1 > main > div:nth-child(3) > div > div.ProductPage_informationBlock__vDYCH > div.ProductPage_desktopBuy__cyRrC > div > div > div > div.PriceInfo_root__GX9Xp > span`,
                 method: "$",
                 description: "Ищу текущую цену",
                 options: {},
-                callback: async (element) => {
-                    const spanValue = await page.evaluate(element => element.textContent, spanElement);
+                callback: async (page, element) => {
+                    const spanValue = await page.evaluate(element => element.textContent, element);
                     console.log(`текущая цена`, spanValue)
-                    /**тут нужно this получить из класса скрипта */
-                    this.result.push(spanValue)
+                    this.result.push(spanValue+'\n')
                 },
                 retry: 0
             },
@@ -105,11 +112,11 @@ export class VprokScript {
                 method: "$",
                 description: "Получить цену без скидки",
                 options: {},
-                callback: async (element) => {
+                callback: async (page, element) => {
                     if (element) {
-                        const spanValue = await page.evaluate(element => element.textContent, spanElement);
+                        const spanValue = await page.evaluate(element => element.textContent, element);
                         console.log(`старая цена`, spanValue)
-                        this.result.push(spanValue)
+                        this.result.push(spanValue+'\n')
                     }
                 },
             },
@@ -118,11 +125,11 @@ export class VprokScript {
                 method: "$",
                 description: "Получить голоса",
                 options: {},
-                callback: async (element) => {
+                callback: async (page, element) => {
                     if (element) {
-                        const spanValue = await page.evaluate(element => element.textContent, spanElement);
+                        const spanValue = await page.evaluate(element => element.textContent, element);
                         console.log(`голоса`, spanValue)
-                        this.result.push(spanValue)
+                        this.result.push(spanValue+'\n')
                     }
                 },
             },
@@ -131,11 +138,11 @@ export class VprokScript {
                 method: "$",
                 description: "Получить рейтинг",
                 options: {},
-                callback: async (element) => {
+                callback: async (page, element) => {
                     if (element) {
-                        const spanValue = await page.evaluate(element => element.textContent, spanElement);
+                        const spanValue = await page.evaluate(element => element.textContent, element);
                         console.log(`рейтинг`, spanValue)
-                        this.result.push(spanValue)
+                        this.result.push(`${spanValue}\n`)
                     }
                 },
             },

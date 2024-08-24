@@ -28,7 +28,10 @@ const { positionals, values } = parseArgs({ strict: false });
 
     console.log(`ищу элемент`)
     /* puppeteer имеет какой то свой вариант на синтаксис xpath */
-    const sccElem = `#__next > div.FeatureAppLayoutBase_layout__0HSBo.FeatureAppLayoutBase_withBanner__OeajF.FeatureAppLayoutBase_hideBannerMobile__97CUm.FeatureAppLayoutBase_hideBannerTablet__dCMoJ.FeatureAppLayoutBase_hideBannerDesktop__gPdf1 > div:nth-child(3) > div.UiHeaderHorizontalBase_secondRow__7b4Lk > div > div.UiHeaderHorizontalBase_region__2ODCG`  // `//*[@class="UiHeaderHorizontalBase_region__2ODCG"]`
+    //const sccElem = `#__next > div.FeatureAppLayoutBase_layout__0HSBo.FeatureAppLayoutBase_withBanner__OeajF.FeatureAppLayoutBase_hideBannerMobile__97CUm.FeatureAppLayoutBase_hideBannerTablet__dCMoJ.FeatureAppLayoutBase_hideBannerDesktop__gPdf1 > div:nth-child(3) > div.UiHeaderHorizontalBase_secondRow__7b4Lk > div > div.UiHeaderHorizontalBase_region__2ODCG`  // `//*[@class="UiHeaderHorizontalBase_region__2ODCG"]`
+
+    const sccElem = `#__next > div.FeatureAppLayoutBase_layout__0HSBo.FeatureAppLayoutBase_hideBannerMobile__97CUm.FeatureAppLayoutBase_hideBannerTablet__dCMoJ.FeatureAppLayoutBase_hideBannerDesktop__gPdf1 > div:nth-child(3) > div.UiHeaderHorizontalBase_secondRow__7b4Lk > div > div.UiHeaderHorizontalBase_region__2ODCG`
+
     const elem = await page.waitForSelector(sccElem)
     console.log(`нашел элемент`)
 
@@ -64,7 +67,7 @@ const { positionals, values } = parseArgs({ strict: false });
     await page.waitForSelector(articulElem)
 
     console.log(`делаю скриншот`)
-    await page.screenshot({ path: `./screens/${(new Date).getTime()}.jpg` });
+    await page.screenshot({ path: `./screens/${(new Date).getTime()}.jpg`, fullPage: true });
 
 
     const priceBlock = `#__next > div.FeatureAppLayoutBase_layout__0HSBo.FeatureAppLayoutBase_hideBannerMobile__97CUm.FeatureAppLayoutBase_hideBannerTablet__dCMoJ.FeatureAppLayoutBase_hideBannerDesktop__gPdf1 > main > div:nth-child(3) > div > div.ProductPage_informationBlock__vDYCH > div.ProductPage_desktopBuy__cyRrC > div > div > div`;
