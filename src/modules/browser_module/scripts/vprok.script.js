@@ -49,7 +49,7 @@ export class VprokScript  {
                 method: "$$",
                 description: "получаю список регионов из отображенного в модальном окне",
                 options: {
-                    region: 'Владимирская обл.' // this.region // 'Владимирская обл.' /* хардкод */
+                    region: this.region // 'Владимирская обл.'
                 },
                 callback: async (page, { listElems, options }) => {
                     console.log(`options`, options)
